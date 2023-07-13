@@ -41,7 +41,6 @@ public class AuthenticationGrantHandler extends AbstractAuthorizationGrantHandle
         HashMap<String, String> params = new HashMap<>();
         params = fetchOauthParameters(oAuthTokenReqMessageContext);
 
-        String username = params.get(AuthenticationGrantConstants.USERNAME_PARAM_PASSWORD_GRANT);
         String flowId = params.get(AuthenticationGrantConstants.FLOW_ID_PARAM_PASSWORD_GRANT);
 
         if (StringUtils.isNotBlank(flowId)) {
@@ -56,27 +55,21 @@ public class AuthenticationGrantHandler extends AbstractAuthorizationGrantHandle
                         (AuthenticationGrantConstants.ErrorMessage.ERROR_FLOW_ID_RETRIEVING, e);
             }
 
-            AuthenticatedUser user = OAuth2Util.getUserFromUserName(username);
-            boolean isValidUser = false;
-
-            try {
-                isValidUser = flowIdDO.getUserId().equals(authServiceInstance.getUserIDFromUserName(username,
-                        IdentityTenantUtil.getTenantId(user.getTenantDomain())));
-            } catch (AuthenticationException e) {
-                AuthenticationGrantUtils.handleException
-                        (AuthenticationGrantConstants.ErrorMessage.ERROR_VALIDATING_USER, e);
-            }
-
+            AuthenticatedUser user = OAuth2Util.getUserFromUserName
+                    (flowIdDO.getFullQualifiedUserName().split("@")[0]);
             oAuthTokenReqMessageContext.setAuthorizedUser(user);
             oAuthTokenReqMessageContext
                     .setScope(oAuthTokenReqMessageContext.getOauth2AccessTokenReqDTO().getScope());
 
             try {
-                if (authServiceInstance.isValidFlowId(flowIdDO) && (isValidUser)) {
+                if (authServiceInstance.isValidFlowId(flowIdDO)) {
                    if (flowIdDO.isAuthFlowCompleted()) {
                        try {
                            CacheBackedFlowIdDAO.getInstance().updateFlowIdState(flowId,
                                    Constants.FLOW_ID_STATE_INACTIVE);
+                           if (log.isDebugEnabled()) {
+                               log.debug("Flow ID updated to Inactive state");
+                           }
                        } catch (AuthenticationException e) {
                            AuthenticationGrantUtils.handleException
                                    (AuthenticationGrantConstants.ErrorMessage.ERROR_UPDATING_FLOW_ID_STATE, e);

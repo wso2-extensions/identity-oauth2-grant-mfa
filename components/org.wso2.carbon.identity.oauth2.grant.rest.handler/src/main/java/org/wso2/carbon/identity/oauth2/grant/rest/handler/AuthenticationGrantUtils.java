@@ -29,9 +29,7 @@ public class AuthenticationGrantUtils {
      * @throws IdentityOAuth2Exception
      */
     public static void handleException (String errorMessage) throws IdentityOAuth2Exception {
-        if (log.isDebugEnabled()) {
-            log.error(errorMessage);
-        }
+        log.error(errorMessage);
         throw new IdentityOAuth2Exception (errorMessage);
     }
 
@@ -43,9 +41,7 @@ public class AuthenticationGrantUtils {
      * @throws IdentityOAuth2Exception
      */
     public static void handleException (String errorMessage, Throwable e) throws IdentityOAuth2Exception {
-        if (log.isDebugEnabled()) {
-            log.error(errorMessage, e);
-        }
+        log.error(errorMessage, e);
         throw new IdentityOAuth2Exception (errorMessage, e);
     }
 
